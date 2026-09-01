@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafePass - Cofre de Senhas</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+  <!-- ── 1. TELA DE DESBLOQUEIO / SETUP ────────────────────────── -->
+  <div id="auth-screen">
+    <div class="auth-card">
+      <div class="auth-logo-badge">
+        <img src="icon-48.png" alt="SafePass">
+      </div>
+      <h2 class="auth-title">Safe<span>Pass</span></h2>
+      <p id="auth-desc" class="auth-desc">Digite sua Senha Mestra para acessar.</p>
+
+      <!-- Badge Nuvem -->
+      <div id="auth-cloud-badge" style="display:none; align-items:center; justify-content:space-between; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:6px 10px; margin-bottom:12px; font-size:11px;">
+        <span id="auth-cloud-email" style="color:#065f46; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">usuario@gmail.com</span>
+        <span style="background:#10b981; color:#fff; padding:1px 6px; border-radius:12px; font-weight:700; font-size:10px;">🟢 Nuvem 4U</span>
+      </div>
+
+      <!-- DESBLOQUEIO COM PIN (QUANDO CONFIGURADO) -->
+      <div id="pin-unlock-section" style="display: none;">
+        <form id="pin-form">
+          <div class="form-group">
+            <label class="form-label" style="text-align:center;">Desbloqueio por PIN</label>
+            <div class="input-wrap">
+              <input type="password" id="input-pin-unlock" class="input-field" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" style="font-size: 22px; letter-spacing: 8px; text-align: center; font-weight: 800;" autofocus>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary" id="btn-pin-submit">
+            <span>⚡</span> Desbloquear com PIN
+          </button>
+        </form>
+        <div style="margin-top: 14px; text-align: center;">
+          <a href="javascript:void(0)" id="link-use-master-pass" style="font-size: 11px; color: var(--primary); text-decoration: none; font-weight: 600;">
+            🔑 Usar Senha Mestra
+          </a>
+        </div>
+      </div>
+
+      <!-- DESBLOQUEIO COM SENHA MESTRA / LOGIN DIRETO -->
+      <form id="auth-form">
+        <div class="form-group" id="email-group" style="display: none;">
+          <label class="form-label" for="auth-email">Seu E-mail</label>
+          <div class="input-wrap">
+            <input type="email" id="auth-email" class="input-field" placeholder="seuemail@gmail.com" autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="master-pass">Senha Mestra</label>
+          <div class="input-wrap">
+            <input type="password" id="master-pass" class="input-field" placeholder="Sua senha mestra..." required autofocus>
+            <button type="button" class="btn-toggle-eye" id="toggle-master">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-group" id="confirm-pass-group" style="display: none;">
+          <label class="form-label" for="confirm-pass">Confirmar Senha Mestra</label>
+          <div class="input-wrap">
+            <input type="password" id="confirm-pass" class="input-field" placeholder="Repita a senha...">
+            <button type="button" class="btn-toggle-eye" id="toggle-confirm">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="btn-auth-submit">
+          <span>🔓</span> Desbloquear Cofre
+        </button>
+
+        <button type="button" id="btn-login-sync" class="btn-secondary" style="margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #94a3b8; border-radius: 8px; height: 36px; cursor: pointer;">
+          <span>🔄</span> Sincronizar Senhas do Servidor
+        </button>
+      </form>
+
+      <!-- Alternar para PIN se ativo -->
+      <div id="pin-switch-wrap" style="display:none; margin-top: 12px; text-align: center;">
+        <a href="javascript:void(0)" id="link-use-pin" style="font-size: 11px; color: var(--primary); text-decoration: none; font-weight: 600;">
+          ⚡ Desbloquear com PIN (6 dígitos)
+        </a>
+      </div>
+
+      <!-- Links Rodapé -->
+      <div id="auth-mode-toggle" style="margin-top: 14px; display: flex; justify-content: center; align-items: center; gap: 14px;">
+        <a href="javascript:void(0)" id="link-switch-account" style="display:none; font-size: 11px; color: var(--text-muted); text-decoration: none;">
+          🔄 Trocar de Conta
+        </a>
+        <a href="javascript:void(0)" id="link-sync-toggle" style="display:none; font-size: 11px; color: var(--text-muted); text-decoration: none;">
+          ☁️ Sincronizar Nuvem
+        </a>
+        <a href="javascript:void(0)" id="link-mode-toggle" style="font-size: 11px; color: var(--text-muted); text-decoration: none;">
+          Criar novo cofre
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. APP PRINCIPAL (2 COLUNAS SPLIT-VIEW) ────────────────── -->
+  <div id="main-app" style="display: none;">
+    
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+      <button id="btn-menu-drawer" class="nav-icon-btn" title="Configurações e Segurança">☰</button>
+      <div class="logo-diamond">
+        <img src="icon-16.png" alt="SafePass">
+      </div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" class="search-box" placeholder="Pesquisar em todos os itens..." autocomplete="off">
+      </div>
+      <button id="btn-cloud-sync" class="btn-upgrade-pill" title="Sincronizar com o Servidor e WebApp" style="gap: 4px; padding: 6px 12px;">
+        <span>🔄</span> <span style="font-weight: 700;">Sincronizar</span>
+      </button>
+      <button id="btn-add-item" class="btn-add-circle" title="Adicionar Novo Item">+</button>
+      <button id="btn-lock-top" class="nav-icon-btn" title="Bloquear Cofre">🔒</button>
+    </header>
+
+    <!-- Pending Captures Alert Box (Auto-Saved Passwords waiting for confirmation) -->
+    <div id="pending-captures-box" style="display: none; background: linear-gradient(135deg, rgba(109, 74, 255, 0.12) 0%, rgba(79, 44, 224, 0.2) 100%); border-bottom: 1px solid rgba(109, 74, 255, 0.35); padding: 8px 12px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+        <span style="font-size: 11px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px;">
+          <span>📥</span> Novas Senhas Capturadas
+        </span>
+        <span id="pending-count-badge" style="font-size: 10px; background: var(--primary); color: #fff; padding: 1px 6px; border-radius: 10px; font-weight: 700;">1</span>
+      </div>
+      <div id="pending-captures-list" style="display: flex; flex-direction: column; gap: 6px;">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Purple Security / Alert Banner -->
+    <div id="promo-banner" class="security-banner">
+      <div class="banner-content">
+        <div class="banner-title">Proteja seus dados</div>
+        <div class="banner-desc">Ative o bloqueio por PIN de 6 dígitos ou personalize o tempo.</div>
+        <button id="btn-banner-action" class="banner-btn">Configurar PIN</button>
+      </div>
+      <div class="banner-right">
+        <button id="btn-close-banner" class="banner-close" title="Fechar">✕</button>
+        <div class="shield-icon-bg">🛡️</div>
+      </div>
+    </div>
+
+    <!-- Pinned / Quick Access Bar -->
+    <div class="pinned-bar" id="pinned-bar">
+      <span class="pinned-title">📌 Fixado</span>
+      <div id="pinned-items-container" style="display:flex; align-items:center; gap:6px; overflow-x:auto;">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Split-View Body (2 Columns) -->
+    <div class="split-body">
+      
+      <!-- Left Column: List Pane -->
+      <aside class="list-column">
+        <div class="list-top-filters">
+          <button class="filter-btn active" id="tab-filter-all">⊞ Todos</button>
+          <button class="filter-btn" id="tab-filter-recent">⏱️ Recente</button>
+          <button class="btn-sort-icon" id="btn-sort" title="Ordenar lista">⏬</button>
+        </div>
+        <div class="list-header-label" id="list-section-title">Última semana</div>
+        <div class="items-scroll-pane" id="vault-items-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </aside>
+
+      <!-- Right Column: Detail Pane -->
+      <section class="detail-column" id="item-detail-pane">
+        <!-- Rendered dynamically by renderItemDetail() -->
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ── 3. MODAL DE EDIÇÃO / CRIAÇÃO DE ITEM ────────────────────── -->
+  <div id="item-editor-modal" style="display: none;">
+    <div class="editor-box">
+      <div class="editor-header">
+        <h3 id="editor-modal-title">✏️ Editar Item</h3>
+        <button id="btn-close-editor">✕</button>
+      </div>
+      
+      <div class="editor-body">
+        <input type="hidden" id="edit-item-id">
+        
+        <div class="form-group">
+          <label class="form-label" for="edit-title">Nome do Serviço / Site</label>
+          <input type="text" id="edit-title" class="input-field" placeholder="Ex: Facebook, Google, Paramount+...">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-url">Endereço Web (URL)</label>
+          <input type="text" id="edit-url" class="input-field" placeholder="https://exemplo.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-username">Usuário / E-mail</label>
+          <input type="text" id="edit-username" class="input-field" placeholder="seuemail@gmail.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-password">Senha</label>
+          <div class="input-wrap">
+            <input type="password" id="edit-password" class="input-field" placeholder="Sua senha secreta...">
+            <button type="button" class="btn-toggle-eye" id="toggle-edit-pass">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-notes">Notas Confidenciais</label>
+          <textarea id="edit-notes" class="input-field" rows="3" style="height:auto; padding:8px; resize:none;" placeholder="Anotações adicionais..."></textarea>
+        </div>
+      </div>
+
+      <div class="editor-footer">
+        <button id="btn-delete-item" class="btn-secondary" style="color: var(--accent-rose); border-color: #fecdd3;">🗑️ Excluir</button>
+        <div style="display:flex; gap:8px;">
+          <button id="btn-cancel-editor" class="btn-secondary">Cancelar</button>
+          <button id="btn-save-editor" class="btn-primary" style="width: auto; padding: 0 16px;">💾 Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. DRAWER DE CONFIGURAÇÕES E SEGURANÇA ───────────────────── -->
+  <div id="settings-drawer" style="display: none;">
+    <div class="settings-panel">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        <h3 style="font-size: 14px; font-weight: 800;">⚙️ Configurações</h3>
+        <button id="btn-close-settings" class="nav-icon-btn">✕</button>
+      </div>
+
+      <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:16px;">
+        <!-- Bloqueio Automático -->
+        <div>
+          <label class="form-label">Bloqueio Automático</label>
+          <select id="select-vault-timeout" class="input-field" style="cursor: pointer;">
+            <option value="15min">15 minutos (Padrão)</option>
+            <option value="1h">1 hora</option>
+            <option value="4h">4 horas</option>
+            <option value="never">🚫 Nunca Bloquear</option>
+          </select>
+        </div>
+
+        <!-- Desbloqueio por PIN -->
+        <div style="border-top: 1px solid var(--border-light); padding-top: 12px;">
+          <label class="form-label">Desbloqueio com PIN</label>
+          <p id="pin-status-desc" style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Nenhum PIN configurado</p>
+          <button id="btn-toggle-pin-modal" class="btn-secondary" style="width: 100%;">Configurar PIN de 6 Dígitos</button>
+        </div>
+
+        <!-- Form Inline de Configurar PIN -->
+        <div id="pin-config-box" style="display: none; background: #f8fafc; border: 1px solid var(--border-primary); border-radius: 8px; padding: 12px;">
+          <div style="font-size: 11px; font-weight: 700; margin-bottom: 6px;">Novo PIN de 6 Dígitos:</div>
+          <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+            <input type="password" id="input-new-pin" class="input-field" maxlength="6" inputmode="numeric" placeholder="Novo PIN" style="text-align:center; letter-spacing:4px; font-size:12px;">
+            <input type="password" id="input-confirm-pin" class="input-field" maxlength="6" inputmode="numeric" placeholder="Confirmar" style="text-align:center; letter-spacing:4px; font-size:12px;">
+          </div>
+          <div style="margin-bottom: 8px;">
+            <input type="password" id="input-pin-master-pass" class="input-field" placeholder="Sua Senha Mestra atual..." style="font-size:12px;">
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 6px;">
+            <button id="btn-cancel-pin" class="btn-secondary" style="height: 30px; padding: 0 10px; font-size: 11px;">Cancelar</button>
+            <button id="btn-save-pin" class="btn-primary" style="height: 30px; padding: 0 12px; font-size: 11px;">Salvar</button>
+          </div>
+        </div>
+
+        <!-- Gerador Rápido de Senhas -->
+        <div style="border-top: 1px solid var(--border-light); padding-top: 12px;">
+          <label class="form-label">Gerador de Senha Forte</label>
+          <div class="input-wrap" style="margin-bottom: 6px;">
+            <input type="text" id="drawer-gen-pass" class="input-field" readonly style="font-family: monospace; font-size: 12px; color: var(--primary);">
+            <button type="button" class="btn-toggle-eye" id="btn-drawer-copy-gen" title="Copiar">📋</button>
+          </div>
+          <button id="btn-drawer-regen" class="btn-secondary" style="width: 100%; font-size: 11px;">🔄 Gerar Outra Senha</button>
+        </div>
+
+        <!-- Links Externos -->
+        <div style="border-top: 1px solid var(--border-light); padding-top: 12px; display:flex; flex-direction:column; gap:6px;">
+          <a href="https://4u.ia.br/app/safepass/" target="_blank" style="text-decoration:none; color:var(--primary); font-size:12px; font-weight:600;">🌐 Abrir SafePass Web Completo ↗</a>
+          <a href="https://4u.ia.br" target="_blank" style="text-decoration:none; color:var(--text-muted); font-size:11px;">🛍️ Apps 4U.IA.BR ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast">Copiado!</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
