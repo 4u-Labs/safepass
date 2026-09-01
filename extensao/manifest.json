@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "SafePass - Gerenciador de Senhas",
-  "version": "1.0.0",
-  "description": "Cofre de senhas criptografado, gerador de senhas seguras e preenchimento automático para o Google Chrome.",
-  "author": "4uLabs (4u.ia.br)",
+  "name": "SafePass — Gerenciador de Senhas Zero-Knowledge",
+  "version": "2.0.0",
+  "description": "Cofre de senhas com criptografia militar Zero-Knowledge (AES-256), preenchimento automático inteligente e sincronização segura.",
+  "author": "4U.IA.BR (contato@4u.ia.br)",
   "icons": {
     "16": "icon-16.png",
     "48": "icon-48.png",
