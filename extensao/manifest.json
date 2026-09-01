@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "SafePass - Gerenciador de Senhas",
+  "version": "1.0.0",
+  "description": "Cofre de senhas criptografado, gerador de senhas seguras e preenchimento automático para o Google Chrome.",
+  "author": "4uLabs (4u.ia.br)",
+  "icons": {
+    "16": "icon-16.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "SafePass - Gerenciador de Senhas",
+    "default_icon": {
+      "16": "icon-16.png",
+      "48": "icon-48.png",
+      "128": "icon-128.png"
+    }
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icon-16.png", "icon-48.png", "icon-128.png", "icon-192.png"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
