@@ -2,6 +2,8 @@
 
 <div align="center">
 
+[![ORCID](https://img.shields.io/badge/ORCID-0009--0004--5936--5060-A6CE39?style=for-the-badge&logo=orcid&logoColor=white)](https://orcid.org/0009-0004-5936-5060)
+
 ![SafePass](https://img.shields.io/badge/SafePass-v2.5_Zero--Knowledge-6d4aff?style=for-the-badge&logo=shield&logoColor=white)
 ![Chrome Extension](https://img.shields.io/badge/Chrome_Extension-Manifest_V3-10b981?style=for-the-badge&logo=google-chrome&logoColor=white)
 ![PWA](https://img.shields.io/badge/PWA-Offline_Ready-0ea5e9?style=for-the-badge&logo=pwa&logoColor=white)
